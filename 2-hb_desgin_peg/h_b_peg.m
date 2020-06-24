@@ -140,6 +140,7 @@ while (flg==0)
                         yps_min_rc = 1;
                     end
                     
+                    
                     k1 = find(dc==dc_min);       %%第一条边，寻找度最小的校验节点
                     
                     chk_flg = 0;
@@ -147,8 +148,14 @@ while (flg==0)
                         xtp = randi(length(k1), 1);
                         tp = dc(k1(xtp));
                         chk_flg = 1;
-                        if ((tp+1>yps_set(1)) && ((chk_vect_g(yps_set(2)-1)+chk_vect_g(yps_set(3)-1))==chk_max))
-                            chk_flg = 0;
+                        if (dc_min<=yps_set(1))
+                            if ((tp+1>yps_set(1)) && ((chk_vect_g(yps_set(2)-1)+chk_vect_g(yps_set(3)-1))==chk_max))
+                                chk_flg = 0;
+                            end
+                        else
+                            if ((tp==yps_set(2)) && (chk_vect_g(yps_set(3)-1)==chk_vect(yps_set(3)-1)))
+                                chk_flg = 0;
+                            end
                         end
                     end
                     chk_vect_g(tp) = chk_vect_g(tp) + 1;
@@ -214,20 +221,42 @@ while (flg==0)
                                 flag_0 = find(dc_0==min(dc_0));                 %%寻找度最小的校验节点
                                 m = length(flag_0);
                                     
-                                    chk_flg = 0;
-                                    while (chk_flg==0)
-                                        n = randi(m, 1, 1); %randint(1,1,m)+1
-                                        tp = dc(flag_0_all(flag_0(n)));
-                                        chk_flg = 1;
+                                chk_flg = 0;
+                                tested = zeros(1, m);
+                                dcpp = 0;
+                                while (chk_flg==0)
+                                    n = randi(m, 1, 1); %randint(1,1,m)+1
+                                    tp = dc(flag_0_all(flag_0(n)));
+                                    chk_flg = 1;
+                                    if (dcpp==0)
                                         if ((tp==yps_set(1)) && ((chk_vect_g(yps_set(2)-1)+chk_vect_g(yps_set(3)-1))==chk_max))
                                             chk_flg = 0;
                                         end
+                                    else
+                                        if (dcpp==1)
+                                            if ((tp==yps_set(2)) && (chk_vect_g(yps_set(3)-1)==chk_vect(yps_set(3)-1)))
+                                                chk_flg = 0;
+                                            end
+                                        end
                                     end
-                                    chk_vect_g(tp) = chk_vect_g(tp) + 1;
-                                    chk_vect_g(tp-1) = chk_vect_g(tp-1) - 1;
-                                    
-                                    H_b(flag_0_all(flag_0(n)),jjx) = 1;
-                                    dc(flag_0_all(flag_0(n))) = dc(flag_0_all(flag_0(n)))+1;
+                                   
+                                    tested(n) = 1;
+                                    if (sum(tested)==m && chk_flg==0)
+                                        dcpp = dcpp + 1;
+                                        flag_0 = find(dc_0==min(dc_0)+dcpp);                 %%寻找度最小的校验节点
+                                        m = length(flag_0);
+
+                                        chk_flg = 0;
+                                        tested = zeros(1, m);
+                                        
+                                    end
+
+                                end
+                                chk_vect_g(tp) = chk_vect_g(tp) + 1;
+                                chk_vect_g(tp-1) = chk_vect_g(tp-1) - 1;
+
+                                H_b(flag_0_all(flag_0(n)),jjx) = 1;
+                                dc(flag_0_all(flag_0(n))) = dc(flag_0_all(flag_0(n)))+1;
         %                              if (dc(flag_0_all(flag_0(n))) <= 7)
         %                                  break;
         %                              end
@@ -282,7 +311,7 @@ while (flg==0)
     yps2 = yps1 + 1;
     yps3 = yps1 + 2;
     xps1 = sum(dc==yps1);
-    xps2 = sum(dc==yps2);
+    xps2 = sum(dcds==yps2);
     xps3 = sum(dc==yps3);
     chk_vec_t(yps1-1) = xps1;
     chk_vec_t(yps2-1) = xps2;
